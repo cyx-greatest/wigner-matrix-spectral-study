@@ -1,70 +1,160 @@
-# Reproduction Guide
+# 项目复现说明
 
-## 环境配置
+## 1. 克隆或打开项目
 
-建议使用独立 Python 虚拟环境，以保证依赖版本和实验环境可复现。
+用户可以从 GitHub 克隆本仓库，也可以直接在本地打开项目文件夹。后续命令均应在项目根目录下运行。
+
+## 2. 创建 Python 虚拟环境
+
+Windows PowerShell 命令：
 
 ```powershell
 python -m venv .venv
-.venv\Scripts\Activate.ps1
+.venv\Scripts\activate
 ```
 
-## 安装依赖
+激活成功后，终端命令行前面应出现 `(.venv)`。
 
-在虚拟环境中安装项目依赖：
+## 3. 安装依赖
 
 ```powershell
 pip install -r requirements.txt
 ```
 
-## 运行测试
+主要依赖包括：
 
-```powershell
-python -m pytest tests
+```text
+numpy
+scipy
+pandas
+matplotlib
+jupyter
+pytest
 ```
 
-## 运行 LSS-CLT 实验
+## 4. 运行测试
 
-论文第 5 章对应“Wigner 矩阵线性谱统计量中心极限定理的二维数值实验设计”。正式复现命令为：
+```powershell
+pytest
+```
 
-```bash
+测试用于检查：
+
+- Wigner 矩阵生成；
+- 半圆律密度函数；
+- Catalan 数与矩量函数；
+- 数值实验入口；
+- LSS-CLT 相关函数。
+
+## 5. 复现实验一：半圆律谱直方图
+
+```powershell
+python -m src.experiments --experiment semicircle --n 300 --dist gaussian --seed 42
+```
+
+输出：
+
+```text
+results/figures/semicircle_histogram.png
+```
+
+## 6. 复现实验二：KS 距离收敛
+
+```powershell
+python -m src.experiments --experiment ks --matrix-sizes 50,100,200 --num-trials 5 --dist gaussian --seed 42
+```
+
+输出：
+
+```text
+results/tables/ks_convergence.csv
+```
+
+## 7. 复现实验三：矩量收敛
+
+```powershell
+python -m src.experiments --experiment moments --matrix-sizes 50,100,200 --orders 2,4,6 --num-trials 5 --dist gaussian --seed 42
+```
+
+输出：
+
+```text
+results/tables/moment_convergence.csv
+results/figures/moment_convergence.png
+```
+
+## 8. 复现实验四：数值普适性
+
+```powershell
+python -m src.experiments --experiment universality --n 300 --seed 42
+```
+
+输出：
+
+```text
+results/figures/universality_gaussian.png
+results/figures/universality_rademacher.png
+results/figures/universality_uniform.png
+```
+
+## 9. 复现实验五：LSS-CLT 二维数值实验
+
+正式展示命令：
+
+```powershell
 python -m src.experiments --experiment lss_clt --matrix-sizes 100,200,400 --num-trials 2000 --dist gaussian --seed 0
 ```
 
-实验设定为：
+输出：
 
 ```text
-f1(x) = x^2
-f2(x) = x^4
-L_N(f) = (1/N) sum_i f(lambda_i)
-G_N(x^2) = N(L_N(x^2) - 1)
-G_N(x^4) = N(L_N(x^4) - 2)
+results/tables/lss_clt_summary.csv
+results/figures/lss_clt_scatter.png
+results/figures/lss_clt_mean_convergence.png
+results/figures/lss_clt_cov_convergence.png
 ```
 
-其中半圆律矩量满足 `S(x^2)=1`、`S(x^4)=2`。理论参考均值向量和协方差矩阵为：
+说明：
 
-```text
-mu = (0, 1)^T
-Sigma = [[4, 16],
-         [16, 72]]
+- 该实验计算量较大；
+- `num-trials=2000` 表示每个矩阵维数下重复模拟 `2000` 次；
+- 如果电脑运行较慢，可以先用较小参数测试：
+
+```powershell
+python -m src.experiments --experiment lss_clt --matrix-sizes 30,50,80 --num-trials 30 --dist gaussian --seed 42
 ```
 
-参数含义：
+## 10. 查看结果
 
-- `--matrix-sizes 100,200,400` 表示矩阵维数 `N`。
-- `--num-trials 2000` 表示每个 `N` 下独立重复模拟 `2000` 次。
-- `--dist gaussian` 表示矩阵条目采用高斯分布。
-- `--seed 0` 表示固定随机种子以便复现。
+- `results/figures` 保存图像；
+- `results/tables` 保存 CSV 表格；
+- `assets/` 中保存 README 展示用图片；
+- `results/` 默认不提交到 GitHub。
 
-## 输出文件
+## 11. 常见问题
 
-LSS-CLT 实验会生成：
+### 1. `ModuleNotFoundError: No module named 'src'`
 
-- `results/tables/lss_clt_summary.csv`
-- `results/figures/lss_clt_scatter.png`
-- `results/figures/lss_clt_mean_convergence.png`
-- `results/figures/lss_clt_cov_convergence.png`
+解决：请在项目根目录运行命令。
 
-## 结果解释
+### 2. PowerShell 无法激活虚拟环境
 
-样本均值不一定随 `N` 单调逼近理论值。有限样本下会受到 Monte Carlo 误差影响，且 `G_N(x^4)` 的波动通常比 `G_N(x^2)` 更明显。因此应关注样本均值向量和样本协方差矩阵的整体稳定趋势，而不是要求每个点严格单调收敛。
+解决：
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+然后重新运行：
+
+```powershell
+.venv\Scripts\activate
+```
+
+### 3. LSS-CLT 运行较慢
+
+解决：先降低 `matrix-sizes` 或 `num-trials`。
+
+### 4. LSS-CLT 均值图不单调收敛
+
+说明：有限样本下存在 Monte Carlo 误差，尤其 `G_N(x^4)` 波动较大，因此不应期待严格单调收敛。
