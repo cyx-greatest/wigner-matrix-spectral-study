@@ -87,5 +87,94 @@ def plot_moment_convergence(results_df, output_path):
 
 
 def plot_lss_scatter(samples, output_path):
-    """Plot LSS sample scatter and save it to disk."""
-    pass
+    """Plot samples of the two-dimensional linear spectral statistic.
+
+    The coordinates are G_N(x^2) and G_N(x^4), as used in the thesis LSS-CLT
+    numerical experiment.
+    """
+    values = np.asarray(samples, dtype=float)
+    if values.ndim != 2 or values.shape[1] != 2 or values.shape[0] == 0:
+        raise ValueError("samples must have shape (num_samples, 2).")
+
+    fig, ax = plt.subplots()
+    ax.scatter(values[:, 0], values[:, 1], alpha=0.7)
+    ax.set_xlabel("G_N(x^2)")
+    ax.set_ylabel("G_N(x^4)")
+    ax.set_title("Two-dimensional LSS Samples")
+    save_figure(fig, output_path)
+
+
+def plot_lss_mean_convergence(summary_df, output_path):
+    """Plot LSS-CLT sample mean vector convergence by matrix size."""
+    required_columns = {
+        "n",
+        "mean_g2",
+        "mean_g4",
+        "theoretical_mean_g2",
+        "theoretical_mean_g4",
+    }
+    missing_columns = required_columns.difference(summary_df.columns)
+    if missing_columns:
+        raise ValueError(f"summary_df is missing required columns: {sorted(missing_columns)}")
+
+    ordered_df = summary_df.sort_values("n")
+    fig, ax = plt.subplots()
+    ax.plot(ordered_df["n"], ordered_df["mean_g2"], marker="o", label="mean G_N(x^2)")
+    ax.plot(ordered_df["n"], ordered_df["mean_g4"], marker="o", label="mean G_N(x^4)")
+    ax.axhline(
+        ordered_df["theoretical_mean_g2"].iloc[0],
+        linestyle="--",
+        label="theoretical mean G_N(x^2)",
+    )
+    ax.axhline(
+        ordered_df["theoretical_mean_g4"].iloc[0],
+        linestyle="--",
+        label="theoretical mean G_N(x^4)",
+    )
+    ax.set_xlabel("matrix size N")
+    ax.set_ylabel("sample mean")
+    ax.set_title("LSS-CLT Sample Mean Convergence")
+    ax.legend()
+    save_figure(fig, output_path)
+
+
+def plot_lss_cov_convergence(summary_df, output_path):
+    """Plot LSS-CLT sample covariance matrix convergence by matrix size."""
+    required_columns = {
+        "n",
+        "cov_g2_g2",
+        "cov_g2_g4",
+        "cov_g4_g4",
+        "theoretical_cov_g2_g2",
+        "theoretical_cov_g2_g4",
+        "theoretical_cov_g4_g4",
+    }
+    missing_columns = required_columns.difference(summary_df.columns)
+    if missing_columns:
+        raise ValueError(f"summary_df is missing required columns: {sorted(missing_columns)}")
+
+    ordered_df = summary_df.sort_values("n")
+    fig, ax = plt.subplots()
+    ax.plot(ordered_df["n"], ordered_df["cov_g2_g2"], marker="o", label="cov G_N(x^2), G_N(x^2)")
+    ax.plot(ordered_df["n"], ordered_df["cov_g2_g4"], marker="o", label="cov G_N(x^2), G_N(x^4)")
+    ax.plot(ordered_df["n"], ordered_df["cov_g4_g4"], marker="o", label="cov G_N(x^4), G_N(x^4)")
+    ax.axhline(
+        ordered_df["theoretical_cov_g2_g2"].iloc[0],
+        linestyle="--",
+        label="theoretical cov G_N(x^2), G_N(x^2)",
+    )
+    ax.axhline(
+        ordered_df["theoretical_cov_g2_g4"].iloc[0],
+        linestyle="--",
+        label="theoretical cov G_N(x^2), G_N(x^4)",
+    )
+    ax.axhline(
+        ordered_df["theoretical_cov_g4_g4"].iloc[0],
+        linestyle="--",
+        label="theoretical cov G_N(x^4), G_N(x^4)",
+    )
+    ax.set_xlabel("matrix size N")
+    ax.set_ylabel("sample covariance")
+    ax.set_title("LSS-CLT Sample Covariance Convergence")
+    ax.legend()
+    save_figure(fig, output_path)

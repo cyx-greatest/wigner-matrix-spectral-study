@@ -6,9 +6,16 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from src.lss_clt import run_lss_clt_experiment as run_lss_clt_simulation
 from src.moments import run_moment_convergence_experiment
 from src.semicircle_law import ks_distance_to_semicircle
-from src.visualization import plot_moment_convergence, plot_spectral_histogram
+from src.visualization import (
+    plot_lss_cov_convergence,
+    plot_lss_mean_convergence,
+    plot_lss_scatter,
+    plot_moment_convergence,
+    plot_spectral_histogram,
+)
 from src.wigner_matrix import compute_eigenvalues, generate_wigner_real
 
 
@@ -127,14 +134,39 @@ def run_universality_experiment(
     return output_paths
 
 
-def run_lss_clt_experiment():
-    """Run the chapter 5 two-dimensional LSS-CLT experiment.
+def run_lss_clt_experiment(
+    matrix_sizes=(50, 100, 200),
+    num_samples=200,
+    dist="gaussian",
+    output_dir="results",
+    seed=None,
+):
+    """Run and save the chapter 5 two-dimensional LSS-CLT experiment.
 
     This entry corresponds to the thesis chapter 5 numerical experiment design
     for the central limit theorem of two-dimensional linear spectral statistics
-    of Wigner matrices. It will be implemented in a later step.
+    of Wigner matrices.
     """
-    raise NotImplementedError("LSS-CLT experiment will be implemented later.")
+    output_dir = Path(output_dir)
+    table_dir = output_dir / "tables"
+    figure_dir = output_dir / "figures"
+    table_dir.mkdir(parents=True, exist_ok=True)
+    figure_dir.mkdir(parents=True, exist_ok=True)
+
+    samples_by_n, summary_df = run_lss_clt_simulation(
+        matrix_sizes=matrix_sizes,
+        num_samples=num_samples,
+        dist=dist,
+        seed=seed,
+    )
+    summary_df.to_csv(table_dir / "lss_clt_summary.csv", index=False)
+
+    max_n = max(samples_by_n)
+    plot_lss_scatter(samples_by_n[max_n], figure_dir / "lss_clt_scatter.png")
+    plot_lss_mean_convergence(summary_df, figure_dir / "lss_clt_mean_convergence.png")
+    plot_lss_cov_convergence(summary_df, figure_dir / "lss_clt_cov_convergence.png")
+
+    return summary_df
 
 
 def main():
@@ -188,7 +220,13 @@ def main():
             seed=args.seed,
         )
     else:
-        run_lss_clt_experiment()
+        run_lss_clt_experiment(
+            matrix_sizes=args.matrix_sizes,
+            num_samples=args.num_trials,
+            dist=args.dist,
+            output_dir=args.output_dir or "results",
+            seed=args.seed,
+        )
 
 
 if __name__ == "__main__":
