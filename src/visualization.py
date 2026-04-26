@@ -202,28 +202,46 @@ def plot_lss_2d_scatter(samples_by_n, output_path):
 
     n_values = sorted(samples_by_n)
     num_panels = len(n_values)
-    cols = min(3, num_panels)
+    cols = min(2, num_panels)
     rows = int(np.ceil(num_panels / cols))
-    fig, axes = plt.subplots(rows, cols, figsize=(5 * cols, 4 * rows), squeeze=False)
+    fig_width = max(8, 8 * cols)
+    fig_height = max(6, 4.8 * rows)
+    fig, axes = plt.subplots(
+        rows,
+        cols,
+        figsize=(fig_width, fig_height),
+        squeeze=False,
+        constrained_layout=True,
+    )
 
-    for ax, n in zip(axes.flat, n_values):
+    for panel_index, (ax, n) in enumerate(zip(axes.flat, n_values)):
         values = np.asarray(samples_by_n[n], dtype=float)
         if values.ndim != 2 or values.shape[1] != 2 or values.shape[0] == 0:
             raise ValueError("each samples array must have shape (num_samples, 2).")
         mean = np.mean(values, axis=0)
         cov = np.cov(values, rowvar=False) if values.shape[0] > 1 else np.zeros((2, 2))
-        ax.scatter(values[:, 0], values[:, 1], alpha=0.35, label="samples")
-        ax.scatter(mean[0], mean[1], marker="x", s=80, label="sample mean")
+        row_index, col_index = divmod(panel_index, cols)
+        ax.scatter(values[:, 0], values[:, 1], alpha=0.3, s=14, label="samples")
+        ax.scatter(mean[0], mean[1], marker="x", s=70, label="mean")
         _add_covariance_ellipse(ax, mean, cov)
-        ax.set_title(f"N = {n}")
-        ax.set_xlabel("G_N(x^2)")
-        ax.set_ylabel("G_N(x^4)")
-        ax.legend()
+        ax.set_title(f"N = {n}", pad=8)
+        if row_index == rows - 1:
+            ax.set_xlabel("G_N(x^2)")
+        else:
+            ax.set_xlabel("")
+        if col_index == 0:
+            ax.set_ylabel("G_N(x^4)")
+        else:
+            ax.set_ylabel("")
+        ax.legend(loc="best", fontsize="small", frameon=True)
 
     for ax in axes.flat[num_panels:]:
         ax.axis("off")
 
-    fig.suptitle("Two-dimensional LSS-CLT Samples")
+    fig.suptitle("Two-dimensional LSS-CLT Samples", y=1.02)
+    layout_engine = fig.get_layout_engine()
+    if layout_engine is not None:
+        layout_engine.set(w_pad=0.25, h_pad=0.35, hspace=0.18, wspace=0.12)
     save_figure(fig, output_path)
 
 
