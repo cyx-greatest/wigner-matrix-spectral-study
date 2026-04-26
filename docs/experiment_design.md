@@ -2,106 +2,127 @@
 
 ## 1. 实验目标
 
-本项目的数值实验用于验证 Wigner 矩阵谱分布的典型性质，包括：
+本项目数值实验严格围绕论文《Wigner 矩阵谱分布性质的理论分析与数值研究》展开，用于验证：
 
-- 经验谱分布向半圆律的收敛；
+- 经验谱分布向 Wigner 半圆律的收敛；
 - 经验矩量向半圆分布矩量的收敛；
 - 不同矩阵元素分布下半圆律的数值普适性；
 - 二维线性谱统计量中心极限定理的数值表现。
 
 ## 2. Wigner 矩阵生成
 
-实验中生成 `N x N` 实对称 Wigner 矩阵。其设置为：
+实验中生成 `N x N` 实对称 Wigner 矩阵：
 
 - 非对角元独立同分布；
 - 均值为 `0`，方差为 `1`；
 - 对角元独立生成；
-- 整体按 `1/sqrt(N)` 标准化；
-- 支持 Gaussian、Rademacher、Uniform 三类条目分布。
+- 矩阵整体按 `1/sqrt(N)` 标准化；
+- 支持 Gaussian、Rademacher、Uniform `(-sqrt(3), sqrt(3))` 三类条目分布。
 
-## 3. 实验一：谱直方图与半圆律密度对比
+## 3. KS 距离收敛实验
 
-该实验步骤为：
-
-- 生成一个 `N x N` Wigner 矩阵；
-- 计算全部特征值；
-- 绘制归一化谱直方图；
-- 在同一图中叠加半圆律密度：
-
-```text
-rho_sc(x) = 1/(2*pi) * sqrt(4 - x^2) * 1_{[-2,2]}(x)
-```
-
-对应命令：
-
-```bash
-python -m src.experiments --experiment semicircle --n 300 --dist gaussian --seed 42
-```
-
-## 4. 实验二：KS 距离收敛实验
-
-该实验步骤为：
-
-- 对不同矩阵维数 `N` 重复生成 Wigner 矩阵；
-- 计算经验谱分布函数 `F_N`；
-- 与半圆律理论分布函数 `F_sc` 比较；
-- 使用 KS 距离作为收敛误差指标：
+对应论文第 4.2 节。对每个矩阵维数 `N` 重复生成 20 次 Wigner 矩阵，计算每次的 KS 距离：
 
 ```text
 D_KS(N) = sup_x |F_N(x) - F_sc(x)|
 ```
 
-对应命令：
+论文正文参数：
 
-```bash
-python -m src.experiments --experiment ks --matrix-sizes 50,100,200 --num-trials 5 --dist gaussian --seed 42
+```text
+matrix_sizes = (50, 100, 200, 400, 800, 1600)
+num_trials = 20
+dist = "gaussian"
 ```
 
-## 5. 实验三：矩量收敛与 Catalan 数验证
+输出 `mean_ks_distance` 和 `std_ks_distance`，图像展示均值，并用误差棒表示标准差。`x` 轴使用 log scale，`y` 轴也使用 log scale，以对应论文中对数刻度下下降的展示方式。
 
-对每个矩阵维数 `N`，计算经验矩量：
+复现命令：
+
+```bash
+python -m src.experiments --experiment ks --preset thesis
+```
+
+输出：
+
+```text
+results/tables/ks_convergence.csv
+results/figures/ks_convergence.png
+```
+
+## 4. 矩量收敛实验
+
+对应论文第 4.3 节。经验矩量为：
 
 ```text
 m_k^N = (1/N) sum_i lambda_i^k
 ```
 
-半圆分布理论矩量满足：
-
-- 奇数阶矩为 `0`；
-- 偶数阶矩 `m_{2k}=C_k`。
-
-Catalan 数为：
+半圆分布理论矩量满足：奇数阶为 `0`，偶数阶为 Catalan 数：
 
 ```text
 C_k = 1/(k+1) * binom(2k,k)
 ```
 
-对应命令：
+论文正文参数：
 
-```bash
-python -m src.experiments --experiment moments --matrix-sizes 50,100,200 --orders 2,4,6 --num-trials 5 --dist gaussian --seed 42
+```text
+matrix_sizes = (50, 100, 200, 400, 800, 1600)
+orders = (2, 4, 6)
+num_trials = 20
+dist = "gaussian"
 ```
 
-## 6. 实验四：Wigner 半圆律的数值普适性
+图像展示不同 `order` 下经验均值随 `N` 的变化，并叠加理论水平线。`x` 轴使用 log scale。
 
-该实验步骤为：
-
-- 分别使用 Gaussian、Rademacher、Uniform 三种条目分布；
-- 生成 Wigner 矩阵并计算特征值；
-- 比较不同条目分布下谱直方图与半圆律密度的接近情况；
-- 用于展示半圆律对具体条目分布的数值普适性。
-
-对应命令：
+复现命令：
 
 ```bash
-python -m src.experiments --experiment universality --n 300 --seed 42
+python -m src.experiments --experiment moments --preset thesis
 ```
 
-## 7. 实验五：二维线性谱统计量中心极限定理实验
+输出：
 
-严格使用论文中的设定。
+```text
+results/tables/moment_convergence.csv
+results/figures/moment_convergence.png
+```
 
-测试函数：
+## 5. Wigner 半圆律的数值普适性实验
+
+对应论文第 4.4 节。分别使用 Gaussian、Rademacher、Uniform `(-sqrt(3), sqrt(3))` 三种条目分布，每种分布重复生成 10 个独立实对称 Wigner 矩阵，汇总特征值并绘制归一化直方图。
+
+论文正文参数：
+
+```text
+n = 400
+repeats = 10
+distributions = ("gaussian", "rademacher", "uniform")
+seed = 42
+```
+
+图像采用 `2 x 2` 子图：
+
+- Gaussian entries；
+- Rademacher entries；
+- Uniform entries；
+- Overlay comparison。
+
+复现命令：
+
+```bash
+python -m src.experiments --experiment universality --preset thesis
+```
+
+输出：
+
+```text
+results/figures/universality_comparison.png
+```
+
+## 6. 二维线性谱统计量中心极限定理实验
+
+对应论文第 5 章。测试函数为：
 
 ```text
 f1(x) = x^2
@@ -121,54 +142,53 @@ G_N(x^2) = N(L_N(x^2) - 1)
 G_N(x^4) = N(L_N(x^4) - 2)
 ```
 
-理论参考均值向量：
+理论参考值：
 
 ```text
-mu = (0,1)^T
+mean = [0, 1]
+cov = [[4, 16], [16, 72]]
 ```
 
-理论参考协方差矩阵：
+论文正文参数：
 
 ```text
-Sigma = [[4,16],
-         [16,72]]
+matrix_sizes = (50, 100, 200, 400, 800)
+num_trials = 1000
+dist = "gaussian"
 ```
 
-实验考察：
+实验对每个 `N` 重复 1000 次，记录二维样本点 `(G_N(x^2), G_N(x^4))`。图像包括不同 `N` 下的二维散点图、样本均值点、协方差椭圆、样本均值向量变化和样本协方差矩阵三个独立分量变化。
 
-- 二维样本散点图；
-- 样本均值向量随 `N` 的变化；
-- 样本协方差矩阵随 `N` 的变化；
-- 有限样本下 `G_N(x^4)` 波动通常比 `G_N(x^2)` 更明显。
+复现命令：
 
-正式展示命令：
+```bash
+python -m src.experiments --experiment lss_clt --preset thesis
+```
+
+输出：
+
+```text
+results/tables/lss_clt_summary.csv
+results/figures/lss_clt_2d_scatter.png
+results/figures/lss_clt_2d_mean.png
+results/figures/lss_clt_2d_cov.png
+```
+
+## 7. 快速测试与自定义参数
+
+pytest 不运行 thesis preset 的大规模实验。快速测试使用小规模参数，以检查函数和文件输出是否正常。
+
+自定义参数示例：
 
 ```bash
 python -m src.experiments --experiment lss_clt --matrix-sizes 100,200,400 --num-trials 2000 --dist gaussian --seed 0
 ```
 
-## 8. 输出文件说明
-
-主要输出文件包括：
-
-```text
-results/figures/semicircle_histogram.png
-results/tables/ks_convergence.csv
-results/tables/moment_convergence.csv
-results/figures/moment_convergence.png
-results/figures/universality_gaussian.png
-results/figures/universality_rademacher.png
-results/figures/universality_uniform.png
-results/tables/lss_clt_summary.csv
-results/figures/lss_clt_scatter.png
-results/figures/lss_clt_mean_convergence.png
-results/figures/lss_clt_cov_convergence.png
-```
-
-## 9. 数值结果解释注意事项
+## 8. 数值结果解释注意事项
 
 - 数值实验用于有限维模拟验证理论趋势；
 - 谱直方图不会完全等于半圆律密度；
 - KS 距离和矩量误差不一定严格单调下降；
 - LSS-CLT 中样本均值和协方差矩阵受 Monte Carlo 误差影响；
+- `G_N(x^4)` 的波动通常比 `G_N(x^2)` 更明显；
 - 不应把有限样本图像理解为严格数学证明。

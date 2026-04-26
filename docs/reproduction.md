@@ -21,16 +21,7 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-主要依赖包括：
-
-```text
-numpy
-scipy
-pandas
-matplotlib
-jupyter
-pytest
-```
+主要依赖包括 `numpy`、`scipy`、`pandas`、`matplotlib`、`jupyter` 和 `pytest`。
 
 ## 4. 运行测试
 
@@ -38,42 +29,31 @@ pytest
 pytest
 ```
 
-测试用于检查：
+测试使用小规模参数，不运行论文正文 thesis preset 的大规模实验。
 
-- Wigner 矩阵生成；
-- 半圆律密度函数；
-- Catalan 数与矩量函数；
-- 数值实验入口；
-- LSS-CLT 相关函数。
+## 5. 复现论文正文实验
 
-## 5. 复现实验一：半圆律谱直方图
+### KS 距离收敛实验
+
+对应论文第 4.2 节：
 
 ```powershell
-python -m src.experiments --experiment semicircle --n 300 --dist gaussian --seed 42
-```
-
-输出：
-
-```text
-results/figures/semicircle_histogram.png
-```
-
-## 6. 复现实验二：KS 距离收敛
-
-```powershell
-python -m src.experiments --experiment ks --matrix-sizes 50,100,200 --num-trials 5 --dist gaussian --seed 42
+python -m src.experiments --experiment ks --preset thesis
 ```
 
 输出：
 
 ```text
 results/tables/ks_convergence.csv
+results/figures/ks_convergence.png
 ```
 
-## 7. 复现实验三：矩量收敛
+### 矩量收敛实验
+
+对应论文第 4.3 节：
 
 ```powershell
-python -m src.experiments --experiment moments --matrix-sizes 50,100,200 --orders 2,4,6 --num-trials 5 --dist gaussian --seed 42
+python -m src.experiments --experiment moments --preset thesis
 ```
 
 输出：
@@ -83,55 +63,61 @@ results/tables/moment_convergence.csv
 results/figures/moment_convergence.png
 ```
 
-## 8. 复现实验四：数值普适性
+### 数值普适性实验
+
+对应论文第 4.4 节：
 
 ```powershell
-python -m src.experiments --experiment universality --n 300 --seed 42
+python -m src.experiments --experiment universality --preset thesis
 ```
 
 输出：
 
 ```text
-results/figures/universality_gaussian.png
-results/figures/universality_rademacher.png
-results/figures/universality_uniform.png
+results/figures/universality_comparison.png
 ```
 
-## 9. 复现实验五：LSS-CLT 二维数值实验
+### LSS-CLT 二维数值实验
 
-正式展示命令：
+对应论文第 5 章：
 
 ```powershell
-python -m src.experiments --experiment lss_clt --matrix-sizes 100,200,400 --num-trials 2000 --dist gaussian --seed 0
+python -m src.experiments --experiment lss_clt --preset thesis
 ```
 
 输出：
 
 ```text
 results/tables/lss_clt_summary.csv
-results/figures/lss_clt_scatter.png
-results/figures/lss_clt_mean_convergence.png
-results/figures/lss_clt_cov_convergence.png
+results/figures/lss_clt_2d_scatter.png
+results/figures/lss_clt_2d_mean.png
+results/figures/lss_clt_2d_cov.png
 ```
 
-说明：
+说明：LSS-CLT thesis preset 计算量较大，其中 `num_trials=1000` 表示每个矩阵维数下重复模拟 1000 次。
 
-- 该实验计算量较大；
-- `num-trials=2000` 表示每个矩阵维数下重复模拟 `2000` 次；
-- 如果电脑运行较慢，可以先用较小参数测试：
+## 6. 自定义参数运行
+
+仍可使用自定义参数进行较小规模测试，例如：
 
 ```powershell
 python -m src.experiments --experiment lss_clt --matrix-sizes 30,50,80 --num-trials 30 --dist gaussian --seed 42
 ```
 
-## 10. 查看结果
+也可以使用指定参数复现某次展示实验：
+
+```powershell
+python -m src.experiments --experiment lss_clt --matrix-sizes 100,200,400 --num-trials 2000 --dist gaussian --seed 0
+```
+
+## 7. 查看结果
 
 - `results/figures` 保存图像；
 - `results/tables` 保存 CSV 表格；
 - `assets/` 中保存 README 展示用图片；
 - `results/` 默认不提交到 GitHub。
 
-## 11. 常见问题
+## 8. 常见问题
 
 ### 1. `ModuleNotFoundError: No module named 'src'`
 
