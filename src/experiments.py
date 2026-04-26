@@ -14,7 +14,6 @@ from src.visualization import (
     plot_lss_2d_scatter,
     plot_lss_cov_convergence,
     plot_lss_mean_convergence,
-    plot_lss_scatter,
     plot_moment_convergence,
     plot_spectral_histogram,
     plot_universality_comparison,
@@ -198,8 +197,6 @@ def run_lss_clt_experiment(
     )
     summary_df.to_csv(table_dir / "lss_clt_summary.csv", index=False)
 
-    max_n = max(samples_by_n)
-    plot_lss_scatter(samples_by_n[max_n], figure_dir / "lss_clt_scatter.png")
     plot_lss_2d_scatter(samples_by_n, figure_dir / "lss_clt_2d_scatter.png")
     plot_lss_mean_convergence(summary_df, figure_dir / "lss_clt_2d_mean.png")
     plot_lss_cov_convergence(summary_df, figure_dir / "lss_clt_2d_cov.png")

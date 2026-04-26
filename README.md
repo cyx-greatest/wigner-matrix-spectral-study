@@ -131,17 +131,43 @@ results/figures/lss_clt_2d_mean.png
 results/figures/lss_clt_2d_cov.png
 ```
 
-## 实验图像展示
+## Experiment Figures
 
-![Semicircle Histogram](assets/semicircle_histogram.png)
+### KS Distance Convergence
+
+![KS Distance Convergence](assets/ks_convergence.png)
+
+说明：该图展示经验谱分布与半圆律分布函数之间的 KS 距离随矩阵维数变化的趋势，用于观察经验谱分布向半圆律的收敛。
+
+### Moment Convergence
 
 ![Moment Convergence](assets/moment_convergence.png)
 
-![LSS CLT Scatter](assets/lss_clt_scatter.png)
+说明：该图展示经验矩量与半圆分布理论矩量之间的对比，其中偶数阶理论矩量由 Catalan 数给出。
 
-![LSS CLT Mean Convergence](assets/lss_clt_mean_convergence.png)
+### Universality Comparison
 
-![LSS CLT Covariance Convergence](assets/lss_clt_cov_convergence.png)
+![Universality Comparison](assets/universality_comparison.png)
+
+说明：该图比较 Gaussian、Rademacher 和 Uniform 三类矩阵元素分布下的经验谱分布，用于展示 Wigner 半圆律的数值普适性。
+
+### Two-dimensional LSS-CLT Samples
+
+![Two-dimensional LSS-CLT Samples](assets/lss_clt_2d_scatter.png)
+
+说明：该图展示二维线性谱统计量样本点 `(G_N(x^2), G_N(x^4))`，并包含样本均值点与协方差椭圆，用于观察二维高斯极限的有限维数值表现。
+
+### LSS-CLT Sample Mean Convergence
+
+![LSS-CLT Sample Mean Convergence](assets/lss_clt_2d_mean.png)
+
+说明：该图展示二维线性谱统计量样本均值向量随矩阵维数变化的情况。
+
+### LSS-CLT Sample Covariance Convergence
+
+![LSS-CLT Sample Covariance Convergence](assets/lss_clt_2d_cov.png)
+
+说明：该图展示二维线性谱统计量样本协方差矩阵中三个独立分量随矩阵维数变化的情况。
 
 ## 结果解释
 
